@@ -1,0 +1,13 @@
+(library
+ (name graft)
+ (public_name graft)
+ (libraries
+  astring
+  yaml
+  markup
+  forester.core
+  forester.compiler
+  forester.frontend
+  hilite
+  cmarkit
+  talaria-bibtex))

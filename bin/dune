@@ -1,0 +1,4 @@
+(executable
+ (public_name graft)
+ (name main)
+ (libraries graft cmdliner))
