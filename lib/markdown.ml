@@ -4,15 +4,15 @@ open Astring
 
 let parse_jekyll_format s =
   match String.cut ~sep:"---\n" s with
-  | None -> Ok (None, Cmarkit.Doc.of_string s)
+  | None -> Ok (None, Cmarkit.Doc.of_string ~strict:false s)
   | Some (fields, body) ->
       (* Start of the file, we might have YAML *)
       if String.is_empty fields then
         match String.cut ~sep:"---\n" body with
-        | None -> Ok (None, Cmarkit.Doc.of_string s)
+        | None -> Ok (None, Cmarkit.Doc.of_string ~strict:false s)
         | Some (fields, body) ->
             let fields_yml = Yaml.of_string fields in
-            let body = Cmarkit.Doc.of_string body in
+            let body = Cmarkit.Doc.of_string ~strict:false body in
             let r = Result.map (fun f -> (Some f, body)) fields_yml in
             Result.map_error
               (function
@@ -20,7 +20,7 @@ let parse_jekyll_format s =
                     Reporter.diagnostic Reporter.Message.Parse_error
                       ~text:(fun ppf -> Fmt.string ppf m))
               r
-      else Ok (None, Cmarkit.Doc.of_string body)
+      else Ok (None, Cmarkit.Doc.of_string ~strict:false body)
 
 let inline_to_string v =
   Cmarkit.Inline.to_plain_text ~break_on_soft:true v
@@ -170,6 +170,16 @@ let code_of_inline ?(end_space = false) folder acc (inline : Cmarkit.Inline.t) :
           let range = range_of_meta meta in
           let code = Range.locate range (Code.Text " ") in
           Cmarkit.Folder.ret (acc @ [ code ]))
+  | Cmarkit.Inline.Ext_math_span (m, meta) ->
+      let math = Cmarkit.Inline.Math_span.tex m in
+      let math = Range.locate_opt None (Code.Text math) in
+      let code =
+        if Cmarkit.Inline.Math_span.display m then Code.Math (Display, [ math ])
+        else Code.Math (Inline, [ math ])
+      in
+      let range = range_of_meta meta in
+      let code = Range.locate range code in
+      Cmarkit.Folder.ret (acc @ [ code ])
   | _ -> Cmarkit.Folder.default
 
 let code_of_block ~config ?(wrap = true) folder acc (block : Cmarkit.Block.t) :

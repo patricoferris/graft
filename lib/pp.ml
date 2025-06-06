@@ -14,6 +14,8 @@ let rec node ppf = function
   | Decl_xmlns (s, u) -> Fmt.pf ppf "\\xmlns:%s{%s}" s u
   | Put (path, t) ->
       Fmt.pf ppf "\\put\\%a{%a}" Forester_core.Trie.pp_path path code t
+  | Math (Display, t) -> Fmt.pf ppf "##{%a}" code t
+  | Math (Inline, t) -> Fmt.pf ppf "#{%a}" code t
   | v -> Fmt.failwith "No printer for %a" pp_node v
 
 and located pp ppf t = pp ppf t.Forester_core.Range.value
