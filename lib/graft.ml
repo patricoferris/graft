@@ -1,3 +1,4 @@
+module Pp = Pp
 module Markdown = Markdown
 module Bib = Bib
 
@@ -79,16 +80,16 @@ let v cwd =
   in
   { config }
 
+let process_file t path = find_preprocessor path |> apply_pp t.config path
+
 let process t in_dir out_dir =
   ensure_dir out_dir;
   let rec loop ((_, rel) as path) =
     match Eio.Path.kind ~follow:false path with
     | `Regular_file ->
-        let pp = find_preprocessor path in
-        let trees = apply_pp t.config path pp in
+        let trees = process_file t path in
         Eio.Fiber.List.iter ~max_fibers:5
           (fun ((_, rel), code) ->
-            Fmt.pr "Processing %s\n" rel;
             Eio.Path.(mkdirs ~perm:0o755 ~exists_ok:true out_dir);
             let path = out_dir / rel in
             let content =

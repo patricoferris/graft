@@ -1,4 +1,5 @@
 (lang dune 3.19)
+(cram enable)
 
 (name graft)
 

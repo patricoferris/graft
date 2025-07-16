@@ -6,8 +6,6 @@ the markdown files in [the documentation folder](./docs).
 
 ## Installation
 
-For the moment we are tracking the 5.0 development branch of Forester.
-
 ```sh
 opam update
 opam install graft
