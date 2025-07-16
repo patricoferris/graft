@@ -82,9 +82,6 @@ let parse_html s =
        ~element:(fun (_, name) attrs children ->
          Element
            (name, List.map (fun ((_, name), v) -> (name, v)) attrs, children))
-  |> function
-  | None -> failwith "No HTML found!"
-  | Some v -> v
 
 let pp_html_attr fmt (name, value) = Fmt.pf fmt "[%s]{%s}" name value
 
@@ -226,17 +223,6 @@ let code_of_block ~config ?(wrap = true) folder acc (block : Cmarkit.Block.t) :
           match codes with
           | Ok c -> Cmarkit.Folder.ret (acc @ c.nodes)
           | Error diagnostic -> Reporter.fatal_diagnostic diagnostic)
-      | Some ("html", _) ->
-          let lines =
-            Cmarkit.Block.Code_block.code cb
-            |> List.map fst |> String.concat ~sep:"\n"
-          in
-          let html = convert_html_to_forester (parse_html lines) in
-          let html = "\\xmlns:html{http://www.w3.org/1999/xhtml}\n" ^ html in
-          let codes =
-            Parse.parse_document ~config (doc html) |> Result.get_ok
-          in
-          Cmarkit.Folder.ret (acc @ codes.nodes)
       | Some (lang, _) -> (
           let lines =
             Cmarkit.Block.Code_block.code cb
@@ -293,9 +279,19 @@ let code_of_block ~config ?(wrap = true) folder acc (block : Cmarkit.Block.t) :
         Cmarkit.Block.Block_quote.block q |> Cmarkit.Folder.fold_block folder []
       in
       Cmarkit.Folder.ret (acc @ quote content)
-  (* | Cmarkit.Block.Thematic_break (_, _meta) -> *)
-  (*     let c = make_ident ~ident:"hr" [] in *)
-  (*     Cmarkit.Folder.ret (acc @ c) *)
+  | Cmarkit.Block.Html_block (block, _meta) -> (
+      let lines = block |> List.map fst |> String.concat ~sep:"\n" in
+      match parse_html lines with
+      | None ->
+          Reporter.log Fmt.string "skipping html";
+          Cmarkit.Folder.default
+      | Some html ->
+          let html = convert_html_to_forester html in
+          let html = "\\xmlns:html{http://www.w3.org/1999/xhtml}\n" ^ html in
+          let codes =
+            Parse.parse_document ~config (doc html) |> Result.get_ok
+          in
+          Cmarkit.Folder.ret (acc @ codes.nodes))
   | _ -> Cmarkit.Folder.ret acc
 
 (* We interpret headings as subtrees, so we first convert a document

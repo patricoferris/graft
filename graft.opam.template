@@ -1,3 +1,0 @@
-pin-depends:[
-  [ "forester.dev" "git+https://git.sr.ht/~jonsterling/ocaml-forester#forester-5.0-dev" ]
-]
