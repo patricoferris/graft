@@ -10,6 +10,7 @@ metadata and supports special code blocks too.
 
 ```forester
 \transclude{graft-0003}
+\transclude{graft-0008}
 \transclude{graft-0004}
 \transclude{graft-0005}
 \transclude{graft-0007}

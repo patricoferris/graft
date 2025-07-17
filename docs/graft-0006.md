@@ -13,7 +13,7 @@ and after setting up a minimal [Forester project](https://www.forester-notes.org
 can generate your forest using:
 
 ```
-graft preprocess --output=trees
+graft forest --output=trees
 ```
 
 This assumes your `forest.toml` is set up to build from `trees`.

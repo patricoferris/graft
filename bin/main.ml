@@ -8,9 +8,12 @@ let single_file_cmd file =
   let config = Graft.v fs in
   let path = Eio.Path.(fs / file) in
   let trees = Graft.process_file config path in
-  List.iter (fun (_, v) -> match v with
-    | `String s -> Fmt.pr "%s\n" s
-    | `Code c -> Fmt.pr "%a\n" Graft.Pp.code c) trees
+  List.iter
+    (fun (_, v) ->
+      match v with
+      | `String s -> Fmt.pr "%s\n" s
+      | `Code c -> Fmt.pr "%a\n" Graft.Pp.code c)
+    trees
 
 let preprocess_cmd input_dir output_dir =
   Eio_main.run @@ fun env ->
@@ -36,8 +39,7 @@ let input_file =
   let doc = "Input file (- for stdin)." in
   Arg.(required & pos 0 (some string) None & info [] ~docv:"INPUT_FILE" ~doc)
 
-let single_file_term =
-  Term.(const single_file_cmd $ input_file)
+let single_file_term = Term.(const single_file_cmd $ input_file)
 
 let single_file_info =
   let doc = "Preprocess a single tree." in
@@ -52,9 +54,10 @@ let preprocess_info =
 
 let graft_cmd =
   let doc = "Graft preprocesses your forests." in
-  Cmd.group (Cmd.info "graft" ~doc) [
-    Cmd.v single_file_info single_file_term; 
-    Cmd.v preprocess_info preprocess_term ]
+  Cmd.group (Cmd.info "graft" ~doc)
+    [
+      Cmd.v single_file_info single_file_term;
+      Cmd.v preprocess_info preprocess_term;
+    ]
 
-let () =
-  exit (Cmd.eval graft_cmd)
+let () = exit (Cmd.eval graft_cmd)
