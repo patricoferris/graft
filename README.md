@@ -16,6 +16,6 @@ opam install graft
 Graft is used to build its own documentation.
 
 ```
-dune exec -- graft preprocess --output=trees docs
+dune exec -- graft forest --output=trees docs
 forester build
 ```
